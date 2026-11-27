@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BusGo | Smart Bus Ticket Reservation</title>
+<meta name="description" content="BusGo bus ticket reservation system">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css?v=3.0">
+</head>
+<body>
+<div class="noise"></div>
+<div class="ambient ambient-a"></div><div class="ambient ambient-b"></div><div class="ambient ambient-c"></div>
+<div class="cursor-glow" id="cursorGlow"></div>
+
+<header class="topbar">
+  <a class="brand" href="#" onclick="showView('home');return false;">
+    <span class="brand-mark"><span>↗</span></span><span>Bus<span>Go</span></span>
+  </a>
+  <nav class="public-nav">
+    <button class="nav-link active" data-view="home">Search buses</button>
+    <button class="nav-link" data-view="trips">My bookings</button>
+  </nav>
+  <div class="top-actions">
+    <div class="status-pill"><i id="apiDot"></i><span id="apiText">Checking</span></div>
+    <button class="admin-link" id="adminPortal">Admin portal</button>
+    <button class="profile-btn" id="profileBtn">Guest</button>
+  </div>
+</header>
+
+<main>
+<section id="homeView" class="view active-view">
+  <section class="hero">
+    <div class="hero-copy reveal">
+      <div class="eyebrow"><span>✦</span> SMART BUS RESERVATION</div>
+      <h1>Go farther.<br><em>Book smarter.</em></h1>
+      <p>Search routes, compare real scheduled trips, choose your exact seat and receive a digital ticket — all from one beautifully simple experience.</p>
+      <div class="hero-stats">
+        <div><strong>LIVE</strong><span>trip search</span></div><b></b>
+        <div><strong>SMART</strong><span>seat selection</span></div><b></b>
+        <div><strong>FAST</strong><span>checkout</span></div>
+      </div>
+    </div>
+
+    <div class="search-shell reveal">
+      <div class="search-glow"></div>
+      <div class="search-card">
+        <div class="card-top">
+          <div><span class="mini-label">PLAN YOUR JOURNEY</span><h2>Where will you go?</h2></div>
+          <div class="route-icon">⌁</div>
+        </div>
+        <form id="searchForm">
+          <div class="route-fields">
+            <label class="field">
+              <span>FROM</span>
+              <div class="input-wrap"><span class="field-icon">⌖</span><input id="source" required placeholder="e.g. Delhi" autocomplete="off"></div>
+            </label>
+            <button type="button" id="swapBtn" class="swap-btn" aria-label="Swap cities">⇄</button>
+            <label class="field">
+              <span>TO</span>
+              <div class="input-wrap"><span class="field-icon">⌖</span><input id="destination" required placeholder="e.g. Lucknow" autocomplete="off"></div>
+            </label>
+          </div>
+          <div class="date-search-row">
+            <label class="field">
+              <span>TRAVEL DATE</span>
+              <div class="input-wrap"><span class="field-icon">◷</span><input id="travelDate" type="date" required></div>
+            </label>
+            <button class="primary-btn search-btn" type="submit"><span>Search buses</span><b>→</b></button>
+          </div>
+        </form>
+        <div class="quick-routes">
+          <span>Popular routes</span>
+          <button data-from="Delhi" data-to="Lucknow">Delhi <i>→</i> Lucknow</button>
+          <button data-from="Noida" data-to="Agra">Noida <i>→</i> Agra</button>
+          <button data-from="Delhi" data-to="Jaipur">Delhi <i>→</i> Jaipur</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="resultsSection" class="results-section hidden">
+    <div class="section-head reveal">
+      <div><span class="mini-label">SEARCH RESULTS</span><h2 id="resultsTitle">Available trips</h2></div>
+      <button class="ghost-btn" id="modifySearch">← Modify search</button>
+    </div>
+    <div id="results" class="results-grid"></div>
+  </section>
+
+  <section class="trust-strip reveal">
+    <div class="trust-item"><span>01</span><div><strong>Search the route</strong><p>Only published trips are shown to passengers.</p></div></div>
+    <div class="trust-item"><span>02</span><div><strong>Pick your seat</strong><p>See booked and available seats in real time.</p></div></div>
+    <div class="trust-item"><span>03</span><div><strong>Get your ticket</strong><p>Complete the academic demo payment flow.</p></div></div>
+  </section>
+</section>
+
+<section id="tripsView" class="view">
+  <div class="page-title reveal"><span class="mini-label">PASSENGER AREA</span><h1>My bookings</h1><p>Your reservations, payment status and tickets in one place.</p></div>
+  <div id="bookingsList" class="bookings-list"></div>
+</section>
+
+<section id="adminView" class="view admin-view">
+  <div class="page-title reveal"><span class="mini-label">PROTECTED ADMIN AREA</span><h1>Operations dashboard</h1><p>Fleet, routes and scheduled trips can only be changed by an authenticated administrator.</p></div>
+  <div class="admin-grid">
+    <div class="panel admin-card"><div class="panel-head"><div><span class="mini-label">FLEET</span><h2>Add a bus</h2></div><span class="panel-icon">🚌</span></div>
+      <form id="busForm" class="stack-form">
+        <input name="busNumber" placeholder="Bus number · UP16AB1234" required>
+        <input name="operatorName" placeholder="Operator · NIET Travels" required>
+        <select name="type"><option value="AC">AC</option><option value="NON_AC">Non-AC</option><option value="SLEEPER">Sleeper</option></select>
+        <input name="totalSeats" type="number" min="1" max="80" value="40" required>
+        <button class="primary-btn" type="submit">Add bus <b>+</b></button>
+      </form>
+    </div>
+    <div class="panel admin-card"><div class="panel-head"><div><span class="mini-label">NETWORK</span><h2>Add a route</h2></div><span class="panel-icon">⌖</span></div>
+      <form id="routeForm" class="stack-form">
+        <input name="source" placeholder="Source · Delhi" required>
+        <input name="destination" placeholder="Destination · Lucknow" required>
+        <input name="distanceKm" type="number" min="1" placeholder="Distance (km)" required>
+        <button class="primary-btn" type="submit">Publish route <b>+</b></button>
+      </form>
+    </div>
+    <div class="panel wide admin-card"><div class="panel-head"><div><span class="mini-label">SCHEDULE</span><h2>Create a trip</h2></div><span class="panel-icon">◷</span></div>
+      <form id="tripForm" class="trip-admin-form">
+        <label>Bus<select id="adminBus" name="busId" required><option value="">Select bus</option></select></label>
+        <label>Route<select id="adminRoute" name="routeId" required><option value="">Select route</option></select></label>
+        <label>Departure<input id="departureTime" name="departureTime" type="datetime-local" required></label>
+        <label>Arrival<input id="arrivalTime" name="arrivalTime" type="datetime-local" required></label>
+        <label>Fare (₹)<input name="fare" type="number" min="1" step="1" placeholder="850" required></label>
+        <button class="primary-btn" type="submit">Publish trip <b>→</b></button>
+      </form>
+    </div>
+  </div>
+  <div class="inventory panel reveal"><div class="panel-head"><div><span class="mini-label">DATABASE SNAPSHOT</span><h2>Current inventory</h2></div><button class="ghost-btn" id="refreshInventory">Refresh</button></div>
+    <div class="inventory-cols"><div><h4>BUS FLEET</h4><div id="busInventory"></div></div><div><h4>PUBLISHED ROUTES</h4><div id="routeInventory"></div></div></div>
+    <div class="published-trips"><h4>PUBLISHED TRIPS</h4><div id="tripInventory"><p class="muted">No trips loaded.</p></div></div>
+  </div>
+</section>
+</main>
+
+<footer><div class="brand"><span class="brand-mark"><span>↗</span></span><span>Bus<span>Go</span></span></div><p>Spring Boot · JPA · MySQL · Secure admin operations</p><span>Local deployment · <b>localhost:8080</b></span></footer>
+
+<div class="modal-backdrop" id="modalBackdrop"><div class="modal" id="modal"></div></div>
+<div class="toast-stack" id="toastStack"></div>
+<script src="app.js?v=3.0"></script>
+</body>
+</html>
